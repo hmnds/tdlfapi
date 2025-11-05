@@ -12,21 +12,3 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 app.include_router(api_router)
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-class Person(BaseModel):
-    name: str
-    email:str
-
-@app.post("/person")
-async def create_person(person: Person):
-    return person

@@ -13,8 +13,15 @@ else:
 
 
 if engine:
-    SessionLocal = sessionmaker(bine=engine, autocommit=False)
+    SessionLocal = sessionmaker(bind=engine, autocommit=False)
 else:
     SessionLocal = None
 
 Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
