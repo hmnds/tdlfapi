@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from app.db.database import Base, engine
 from dotenv import load_dotenv
 from app.models import *
