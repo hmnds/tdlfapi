@@ -1,12 +1,11 @@
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from app.user import model as models
 from app.user import schemas as schemas
-from app.core.passwords import get_password_hash
+from app.core.passwords import get_password_hash, verify_password
 
 
-def create_user(db: Session, data: schemas.UserCreate):
+def create_user(db, data):
     user = models.User(
         first_name=data.first_name,
         last_name=data.last_name,
@@ -23,19 +22,18 @@ def create_user(db: Session, data: schemas.UserCreate):
     return user
 
 
-def list_users(db: Session, skip: int = 0, limit: int = 100):
+def list_users(db, skip=0, limit=100):
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def get_user(db: Session, user_id: int):
+def get_user(db, user_id):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 
-def update_user(db: Session, user_id: int, data: schemas.UserUpdate):
+def update_user(db, user_id, data):
     user = get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-
     if data.first_name is not None:
         user.first_name = data.first_name
     if data.last_name is not None:
@@ -54,9 +52,23 @@ def update_user(db: Session, user_id: int, data: schemas.UserUpdate):
     return user
 
 
-def delete_user(db: Session, user_id: int):
+def delete_user(db, user_id):
     user = get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
+
+
+def get_user_by_email(db, email):
+    return db.query(models.User).filter(models.User.email == email).first()
+
+
+def authenticate_user(db, email, password):
+    user = get_user_by_email(db, email)
+    if not user:
+        return None
+
+    if not verify_password(password, user.password):
+        return None
+    return user
